@@ -1,5 +1,4 @@
 const fs = require('fs');
-const { pathToFileURL } = require('url');
 const convert = require('xml-js')
 
 //get file names
@@ -15,11 +14,24 @@ const gpxJson = fileNames
 
 //separate route from waypoint objects
 const routes = getRoutes(gpxJson)
+if(routes.length > 1){
+    console.log('ERROR: found ' + routes.length + ' route files. You can only have 1.');
+    return 1;
+}
+const route = routes[0];
 const waypoints = getWaypoints(gpxJson)
+const stripedWaypoints = stripWaypoints(waypoints);
 
-//merge route with waypoint
-let updatedRoute = {...waypoints[0]}
-updatedRoute.gpx.rte = routes[0].gpx.rte
+
+//merge route with waypoints
+const updatedRoute = {
+        _declaration: route._declaration,
+        gpx: {
+            _attributes: route._attributes,
+            wpt: stripedWaypoints,
+            rte: route.gpx.rte
+        },
+    }
 
 //convert to xml
 const updatedRouteXML = convert.js2xml(updatedRoute,{compact: true})
@@ -34,11 +46,11 @@ fs.writeFileSync(outputFolder + '/updatedRoute.gpx', updatedRouteXML)
 
 
 //helper functions
-function appendPath(folder, fileName) {
+function appendPath(folder, fileNameOrSubDir) {
     if (!folder.endsWith('/')) {
         folder = folder.concat('/');
     }
-    return folder.concat(fileName)
+    return folder.concat(fileNameOrSubDir)
 }
 
 function getRoutes(jsonObjects) {
@@ -48,4 +60,8 @@ function getRoutes(jsonObjects) {
 function getWaypoints(jsonObjects) {
     return jsonObjects
         .filter(obj => obj.gpx.wpt)
+}
+
+function stripWaypoints(waypoints) {
+    return waypoints.map(waypoint => waypoint.gpx.wpt)
 }
