@@ -2,7 +2,7 @@
   "name": "gpx-route-waypoint-merger-cli",
   "version": "1.0.0",
   "description": "Command line utility to inject waypoints contained on GPX files into a GPX file containing a route.",
-  "main": "gpx-merger.js",
+  "main": "gpx-merger-async.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

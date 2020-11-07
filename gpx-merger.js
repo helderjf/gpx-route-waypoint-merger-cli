@@ -1,8 +1,10 @@
-const fs = require('fs');
+const fs = require('fs')
 const convert = require('xml-js')
 
 //get file names
 const folder = process.argv[2]
+const start = Date.now();
+
 const fileNames = fs.readdirSync(folder, 'utf-8')
 
 //convert GPX files to JS Objects
@@ -15,12 +17,12 @@ const gpxJson = fileNames
 //separate route from waypoint objects
 const routes = getRoutes(gpxJson)
 if(routes.length > 1){
-    console.log('ERROR: found ' + routes.length + ' route files. You can only have 1.');
-    return 1;
+    console.log('ERROR: found ' + routes.length + ' route files. You can only have 1.')
+    return 1
 }
-const route = routes[0];
+const route = routes[0]
 const waypoints = getWaypoints(gpxJson)
-const stripedWaypoints = stripWaypoints(waypoints);
+const stripedWaypoints = stripWaypoints(waypoints)
 
 
 //merge route with waypoints
@@ -30,7 +32,7 @@ const updatedRoute = {
             _attributes: route._attributes,
             wpt: stripedWaypoints,
             rte: route.gpx.rte
-        },
+        }
     }
 
 //convert to xml
@@ -39,16 +41,19 @@ const updatedRouteXML = convert.js2xml(updatedRoute,{compact: true})
 //write output to file system
 const outputFolder = appendPath(folder, 'output')
 if (!fs.existsSync(outputFolder)){
-    fs.mkdirSync(outputFolder);
+    fs.mkdirSync(outputFolder)
 }
 fs.writeFileSync(outputFolder + '/updatedRoute.gpx', updatedRouteXML)
+
+//log result and time
+console.log('GPX data merged. ' + (Date.now() - start) + 'miliseconds')
 
 
 
 //helper functions
 function appendPath(folder, fileNameOrSubDir) {
     if (!folder.endsWith('/')) {
-        folder = folder.concat('/');
+        folder = folder.concat('/')
     }
     return folder.concat(fileNameOrSubDir)
 }
